@@ -535,6 +535,110 @@
     color: var(--gold);
   }
 
+  /* ─── Affirmation ─── */
+  .affirmation-card {
+    background: linear-gradient(135deg, rgba(80,30,120,0.18), rgba(40,20,70,0.12));
+    border: 1px solid var(--border-glow);
+    border-radius: 16px;
+    padding: 28px 28px 22px;
+    text-align: center;
+    margin-bottom: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .affirmation-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--rose), transparent);
+  }
+
+  .affirmation-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.28em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .affirmation-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--moon-glow);
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+    min-height: 36px;
+    margin-bottom: 20px;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+
+  .affirmation-text.fade-out {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  .affirmation-text.fade-in {
+    animation: affirmFadeIn 0.45s ease forwards;
+  }
+
+  @keyframes affirmFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .affirm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid rgba(232,164,192,0.35);
+    border-radius: 999px;
+    color: var(--rose);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .affirm-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(232,164,192,0.08), rgba(200,180,240,0.06));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .affirm-btn:hover {
+    border-color: rgba(232,164,192,0.7);
+    box-shadow: 0 0 18px rgba(232,164,192,0.25);
+    color: var(--moon-glow);
+  }
+
+  .affirm-btn:hover::before { opacity: 1; }
+
+  .affirm-btn:active { transform: scale(0.97); }
+
+  .affirm-btn-icon {
+    font-size: 14px;
+    display: inline-block;
+    transition: transform 0.6s ease;
+  }
+
+  .affirm-btn:hover .affirm-btn-icon {
+    transform: rotate(30deg);
+  }
+
   /* ─── Footer ─── */
   footer {
     text-align: center;
@@ -657,6 +761,16 @@
   <div>
     <div class="section-label">Moon Phase Progress</div>
     <div class="weekly-grid" id="weeklyGrid"></div>
+  </div>
+
+  <!-- Affirmation Generator -->
+  <div class="affirmation-card">
+    <div class="affirmation-label">✦ Moon Affirmation ✦</div>
+    <p class="affirmation-text" id="affirmationText">I glow in my own time.</p>
+    <button class="affirm-btn" id="affirmBtn">
+      <span class="affirm-btn-icon">🌙</span>
+      Channel a new affirmation
+    </button>
   </div>
 
   <footer>
@@ -880,9 +994,64 @@ function renderAll() {
   renderWeeklyGrid();
 }
 
+// ─── Affirmations ────────────────────────────────────────────────
+const affirmations = [
+  "I glow in my own time.",
+  "I trust my growth.",
+  "My energy is calm and powerful.",
+  "I am becoming who I was always meant to be.",
+  "Rest is sacred. I honour it.",
+  "The moon does not rush. Neither do I.",
+  "I release what no longer serves my light.",
+  "I am rooted, radiant, and whole.",
+  "My softness is my strength.",
+  "I bloom slowly, and that is beautiful.",
+  "Every phase of me is worthy.",
+  "I call back my energy and pour it into myself.",
+  "I am in alignment with what I desire.",
+  "My presence is enough. My pace is enough.",
+  "I am a full moon in every season of my life.",
+  "Stillness is where I find my power.",
+  "I do not need to shrink to shine.",
+  "My healing is not linear — and that is perfect.",
+  "I attract what reflects my inner peace.",
+  "The universe is working in my favour, always.",
+];
+
+let lastAffirmIdx = -1;
+
+function getNewAffirmation() {
+  let idx;
+  do { idx = Math.floor(Math.random() * affirmations.length); }
+  while (idx === lastAffirmIdx);
+  lastAffirmIdx = idx;
+  return affirmations[idx];
+}
+
+function initAffirmation() {
+  const textEl = document.getElementById('affirmationText');
+  const btn    = document.getElementById('affirmBtn');
+
+  // Show a random one on load
+  lastAffirmIdx = -1;
+  textEl.textContent = getNewAffirmation();
+
+  btn.addEventListener('click', () => {
+    textEl.classList.remove('fade-in');
+    textEl.classList.add('fade-out');
+
+    setTimeout(() => {
+      textEl.textContent = getNewAffirmation();
+      textEl.classList.remove('fade-out');
+      textEl.classList.add('fade-in');
+    }, 350);
+  });
+}
+
 // ─── Init ─────────────────────────────────────────────────────────
 renderQuote();
 renderAll();
+initAffirmation();
 </script>
 </body>
 </html>
