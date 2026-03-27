@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lunar Habits — Moon Ritual Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;500&family=Raleway:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07080f;
+    --surface: #0d0f1c;
+    --surface2: #12152a;
+    --moon-silver: #c8d8e8;
+    --moon-glow: #e8d5f5;
+    --rose: #e8a4c0;
+    --rose-dim: #b07090;
+    --gold: #d4af6a;
+    --gold-dim: #8a6e40;
+    --text: #dde4f0;
+    --text-dim: #7a8499;
+    --border: rgba(200,216,232,0.12);
+    --border-glow: rgba(232,213,245,0.25);
+    --glow-sm: 0 0 12px rgba(200,180,240,0.3);
+    --glow-md: 0 0 30px rgba(200,180,240,0.2), 0 0 60px rgba(200,180,240,0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Raleway', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Stars background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 15% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 10%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 45% 5%, rgba(255,255,255,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 35%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 25% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 90% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 10% 85%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 90%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 35% 75%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(2px 2px at 55% 45%, rgba(200,180,240,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 55%, rgba(232,213,245,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 5% 45%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 15%, rgba(255,255,255,0.4) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Nebula glow */
+  body::after {
+    content: '';
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    top: -100px;
+    right: -100px;
+    background: radial-gradient(ellipse, rgba(120,60,160,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── Header ─── */
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .moon-icon-large {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 0 20px rgba(200,180,240,0.6));
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(22px, 5vw, 36px);
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    color: var(--moon-silver);
+    text-shadow: 0 0 30px rgba(200,180,240,0.5);
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--rose);
+    letter-spacing: 0.08em;
+    opacity: 0.9;
+  }
+
+  /* ─── Date ─── */
+  .date-display {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    margin-bottom: 36px;
+    text-transform: uppercase;
+  }
+
+  /* ─── Quote ─── */
+  .quote-card {
+    background: linear-gradient(135deg, rgba(120,60,160,0.12), rgba(60,40,100,0.08));
+    border: 1px solid var(--border-glow);
+    border-radius: 16px;
+    padding: 24px 32px;
+    text-align: center;
+    margin-bottom: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quote-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--moon-glow), transparent);
+  }
+
+  .quote-moon {
+    font-size: 20px;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .quote-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--moon-glow);
+    line-height: 1.6;
+    letter-spacing: 0.03em;
+  }
+
+  .quote-author {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    margin-top: 10px;
+    text-transform: uppercase;
+  }
+
+  /* ─── Glow Level ─── */
+  .glow-level-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 28px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .glow-left { flex: 1; min-width: 140px; }
+
+  .glow-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .glow-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--gold);
+    text-shadow: 0 0 15px rgba(212,175,106,0.5);
+    line-height: 1.2;
+  }
+
+  .glow-week {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    letter-spacing: 0.1em;
+  }
+
+  .glow-phases {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .phase-orb {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    border: 1px solid transparent;
+    transition: all 0.4s ease;
+    position: relative;
+  }
+
+  .phase-orb.active {
+    border-color: var(--border-glow);
+    box-shadow: 0 0 12px rgba(200,180,240,0.4);
+    background: rgba(120,60,160,0.2);
+  }
+
+  .phase-orb.inactive {
+    opacity: 0.25;
+    filter: grayscale(1);
+  }
+
+  /* ─── Progress Bar ─── */
+  .progress-section {
+    margin-bottom: 32px;
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .progress-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .progress-count {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    color: var(--moon-glow);
+  }
+
+  .progress-track {
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--rose), var(--moon-glow), var(--gold));
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    box-shadow: 0 0 10px rgba(200,180,240,0.5);
+  }
+
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: -3px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--moon-glow);
+    box-shadow: 0 0 8px rgba(200,180,240,0.8);
+    transition: opacity 0.3s;
+  }
+
+  /* ─── Day selector ─── */
+  .day-section {
+    margin-bottom: 28px;
+  }
+
+  .section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .day-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+  }
+
+  .day-btn {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'Raleway', sans-serif;
+    font-size: 11px;
+    font-weight: 300;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .day-btn:hover {
+    border-color: var(--border-glow);
+    color: var(--text);
+    background: rgba(200,180,240,0.05);
+  }
+
+  .day-btn.active {
+    background: rgba(120,60,160,0.25);
+    border-color: rgba(200,180,240,0.4);
+    color: var(--moon-glow);
+    box-shadow: var(--glow-sm);
+  }
+
+  .day-btn.completed::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--rose);
+    box-shadow: 0 0 4px var(--rose);
+  }
+
+  /* ─── Habits ─── */
+  .habits-section {
+    margin-bottom: 36px;
+  }
+
+  .habit-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .habit-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(200,180,240,0.04), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .habit-item:hover {
+    border-color: var(--border-glow);
+    transform: translateX(3px);
+  }
+
+  .habit-item:hover::before { opacity: 1; }
+
+  .habit-item.done {
+    border-color: rgba(200,180,240,0.2);
+    background: rgba(120,60,160,0.08);
+  }
+
+  .habit-item.done::before { opacity: 1; }
+
+  .habit-checkbox {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(200,216,232,0.3);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .habit-item.done .habit-checkbox {
+    background: linear-gradient(135deg, rgba(200,150,240,0.4), rgba(232,164,192,0.3));
+    border-color: var(--moon-glow);
+    box-shadow: 0 0 10px rgba(200,180,240,0.4);
+  }
+
+  .habit-checkbox-inner {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--moon-glow);
+    transform: scale(0);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 6px var(--moon-glow);
+  }
+
+  .habit-item.done .habit-checkbox-inner {
+    transform: scale(1);
+  }
+
+  .habit-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    filter: grayscale(0.3);
+    transition: filter 0.3s;
+  }
+
+  .habit-item.done .habit-icon {
+    filter: none;
+    animation: sparkle 0.4s ease;
+  }
+
+  @keyframes sparkle {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3) rotate(10deg); }
+    100% { transform: scale(1); }
+  }
+
+  .habit-info { flex: 1; }
+
+  .habit-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--text);
+    transition: color 0.3s;
+    letter-spacing: 0.02em;
+  }
+
+  .habit-item.done .habit-name {
+    color: var(--moon-glow);
+  }
+
+  .habit-note {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  .habit-streak {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    color: var(--rose-dim);
+    letter-spacing: 0.1em;
+    flex-shrink: 0;
+    transition: color 0.3s;
+  }
+
+  .habit-item.done .habit-streak {
+    color: var(--rose);
+    text-shadow: 0 0 8px rgba(232,164,192,0.5);
+  }
+
+  /* ─── Weekly Summary ─── */
+  .weekly-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+
+  .week-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 12px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .week-card.active-week {
+    border-color: var(--border-glow);
+    background: rgba(120,60,160,0.1);
+    box-shadow: var(--glow-sm);
+  }
+
+  .week-phase {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 6px;
+    filter: drop-shadow(0 0 6px rgba(200,180,240,0.4));
+  }
+
+  .week-name {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .week-pct {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    color: var(--gold);
+  }
+
+  /* ─── Footer ─── */
+  footer {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-moon { font-size: 20px; margin-bottom: 8px; display: block; }
+
+  .footer-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── Ripple / complete animation ─── */
+  @keyframes ripplePulse {
+    0% { box-shadow: 0 0 0 0 rgba(200,180,240,0.4); }
+    100% { box-shadow: 0 0 0 20px rgba(200,180,240,0); }
+  }
+
+  .habit-item.just-done {
+    animation: ripplePulse 0.5s ease-out;
+  }
+
+  /* Completion celebration */
+  .celebration {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 60px;
+    pointer-events: none;
+    z-index: 999;
+    animation: celebrateAnim 1.2s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes celebrateAnim {
+    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    30% { transform: translate(-50%, -50%) scale(1.4); opacity: 1; }
+    70% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -60%) scale(1); opacity: 0; }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: rgba(200,180,240,0.2); border-radius: 3px; }
+
+  @media (max-width: 480px) {
+    .day-grid { grid-template-columns: repeat(6, 1fr); }
+    .weekly-grid { grid-template-columns: repeat(2, 1fr); }
+    .glow-level-card { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <span class="moon-icon-large">🌕</span>
+    <h1>Lunar Habits</h1>
+    <p class="subtitle">a 30-day moon ritual tracker</p>
+  </header>
+
+  <div class="date-display" id="dateDisplay"></div>
+
+  <!-- Quote -->
+  <div class="quote-card">
+    <span class="quote-moon">✦</span>
+    <p class="quote-text" id="quoteText">"She is water. Powerful enough to drown you, soft enough to cleanse you, deep enough to save you."</p>
+    <p class="quote-author" id="quoteAuthor">— adrienne maree brown</p>
+  </div>
+
+  <!-- Glow Level -->
+  <div class="glow-level-card">
+    <div class="glow-left">
+      <div class="glow-label">Current Glow Level</div>
+      <div class="glow-title" id="glowTitle">New Moon</div>
+      <div class="glow-week" id="glowWeek">Week 1 · Begin your ritual</div>
+    </div>
+    <div class="glow-phases" id="glowPhases">
+      <div class="phase-orb active" title="Week 1: New Moon">🌑</div>
+      <div class="phase-orb inactive" title="Week 2: Crescent">🌒</div>
+      <div class="phase-orb inactive" title="Week 3: Half Moon">🌓</div>
+      <div class="phase-orb inactive" title="Week 4: Full Moon">🌕</div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-section">
+    <div class="progress-header">
+      <span class="progress-label">Today's Ritual Progress</span>
+      <span class="progress-count" id="progressCount">0 / 7 complete</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- Day Selector -->
+  <div class="day-section">
+    <div class="section-label">Day of Journey</div>
+    <div class="day-grid" id="dayGrid"></div>
+  </div>
+
+  <!-- Habits -->
+  <div class="habits-section">
+    <div class="section-label">Today's Moon Rituals</div>
+    <div id="habitsList"></div>
+  </div>
+
+  <!-- Weekly Summary -->
+  <div>
+    <div class="section-label">Moon Phase Progress</div>
+    <div class="weekly-grid" id="weeklyGrid"></div>
+  </div>
+
+  <footer>
+    <span class="footer-moon">🌙</span>
+    <p class="footer-text">Under the same moon, every night is sacred.</p>
+  </footer>
+
+</div>
+
+<script>
+// ─── Data ───────────────────────────────────────────────────────
+const habits = [
+  { id: 'affirmations',  name: 'Mirror Affirmations',  icon: '🪞', note: 'Speak your worth aloud' },
+  { id: 'water',         name: 'Charged Water',         icon: '💧', note: 'Set intentions in water' },
+  { id: 'posture',       name: 'Posture Practice',      icon: '🧘', note: 'Stand tall, move gently' },
+  { id: 'skincare',      name: 'Skincare Ritual',       icon: '✨', note: 'Tend to your vessel' },
+  { id: 'reflection',   name: 'Moon Reflection',       icon: '🌙', note: 'Gaze and contemplate' },
+  { id: 'journal',       name: 'Journal',               icon: '📓', note: 'Release, receive, record' },
+  { id: 'sleep',         name: 'Sleep Early',           icon: '🌿', note: 'Honour your rest cycle' },
+];
+
+const quotes = [
+  { text: '"She is water. Powerful enough to drown you, soft enough to cleanse you, deep enough to save you."', author: '— adrienne maree brown' },
+  { text: '"The moon does not fight. It attacks no one. It does not worry. It simply shines."', author: '— Deng Ming-Dao' },
+  { text: '"Like the moon, come out from behind the clouds and shine."', author: '— Rumi' },
+  { text: '"I am not afraid of the night. The dark has always known me."', author: '— unknown' },
+  { text: '"Let the moon guide you home to yourself."', author: '— unknown' },
+  { text: '"She remembered who she was and the game changed."', author: '— Lalah Delia' },
+  { text: '"You are the universe, expressing itself as a human for a little while."', author: '— Eckhart Tolle' },
+  { text: '"The full moon rises. She is radiant. So are you."', author: '— unknown' },
+  { text: '"Even the moon has phases — be patient with your becoming."', author: '— unknown' },
+  { text: '"Moonlight drowns out all but the brightest stars."', author: '— J.R.R. Tolkien' },
+];
+
+const glowLevels = [
+  { name: 'New Moon',     week: 'Week 1 · Begin your ritual',        phase: 0 },
+  { name: 'Crescent',     week: 'Week 2 · Your light is emerging',   phase: 1 },
+  { name: 'Half Moon',    week: 'Week 3 · Balance and momentum',     phase: 2 },
+  { name: 'Full Moon',    week: 'Week 4 · You are radiant',          phase: 3 },
+];
+
+const phaseIcons = ['🌑','🌒','🌓','🌕'];
+
+// ─── State ───────────────────────────────────────────────────────
+const STORAGE_KEY = 'lunar_habits_v1';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { days: {} };
+  } catch { return { days: {} }; }
+}
+
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+let state = loadState();
+let currentDay = parseInt(localStorage.getItem('lunar_current_day') || '1');
+
+// ─── Helpers ─────────────────────────────────────────────────────
+function getDayData(day) {
+  if (!state.days[day]) state.days[day] = {};
+  return state.days[day];
+}
+
+function getCompletedCount(day) {
+  const d = getDayData(day);
+  return habits.filter(h => d[h.id]).length;
+}
+
+function isDayComplete(day) {
+  return getCompletedCount(day) === habits.length;
+}
+
+function getWeeklyPct(week) {
+  // week 1-4, days 1-30
+  const startDay = (week - 1) * 7 + 1;
+  const endDay = Math.min(week * 7, 30);
+  let total = 0, done = 0;
+  for (let d = startDay; d <= endDay; d++) {
+    total += habits.length;
+    done += getCompletedCount(d);
+  }
+  return total > 0 ? Math.round((done / total) * 100) : 0;
+}
+
+function getCurrentWeek() {
+  return Math.min(Math.ceil(currentDay / 7), 4);
+}
+
+// ─── Date display ─────────────────────────────────────────────────
+function renderDate() {
+  const now = new Date();
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('dateDisplay').textContent = now.toLocaleDateString('en-US', opts).toUpperCase();
+}
+
+// ─── Quote ────────────────────────────────────────────────────────
+function renderQuote() {
+  const q = quotes[Math.floor(Math.random() * quotes.length)];
+  document.getElementById('quoteText').textContent = q.text;
+  document.getElementById('quoteAuthor').textContent = q.author;
+}
+
+// ─── Glow Level ───────────────────────────────────────────────────
+function renderGlowLevel() {
+  const week = getCurrentWeek() - 1;
+  const level = glowLevels[week];
+  document.getElementById('glowTitle').textContent = level.name;
+  document.getElementById('glowWeek').textContent = level.week;
+
+  const orbs = document.querySelectorAll('.phase-orb');
+  orbs.forEach((orb, i) => {
+    orb.className = 'phase-orb ' + (i <= week ? 'active' : 'inactive');
+  });
+}
+
+// ─── Progress ─────────────────────────────────────────────────────
+function renderProgress() {
+  const count = getCompletedCount(currentDay);
+  const pct = Math.round((count / habits.length) * 100);
+  document.getElementById('progressCount').textContent = `${count} / ${habits.length} complete`;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// ─── Day Grid ─────────────────────────────────────────────────────
+function renderDayGrid() {
+  const grid = document.getElementById('dayGrid');
+  grid.innerHTML = '';
+  for (let d = 1; d <= 30; d++) {
+    const btn = document.createElement('button');
+    btn.className = 'day-btn' +
+      (d === currentDay ? ' active' : '') +
+      (isDayComplete(d) ? ' completed' : '');
+    btn.textContent = d;
+    btn.addEventListener('click', () => {
+      currentDay = d;
+      localStorage.setItem('lunar_current_day', d);
+      renderAll();
+    });
+    grid.appendChild(btn);
+  }
+}
+
+// ─── Habits ───────────────────────────────────────────────────────
+function renderHabits() {
+  const list = document.getElementById('habitsList');
+  list.innerHTML = '';
+  const dayData = getDayData(currentDay);
+
+  habits.forEach(habit => {
+    const done = !!dayData[habit.id];
+    const item = document.createElement('div');
+    item.className = 'habit-item' + (done ? ' done' : '');
+    item.innerHTML = `
+      <div class="habit-checkbox"><div class="habit-checkbox-inner"></div></div>
+      <span class="habit-icon">${habit.icon}</span>
+      <div class="habit-info">
+        <div class="habit-name">${habit.name}</div>
+        <div class="habit-note">${habit.note}</div>
+      </div>
+      <div class="habit-streak">${done ? '✦ done' : '○'}</div>
+    `;
+    item.addEventListener('click', () => {
+      dayData[habit.id] = !dayData[habit.id];
+      saveState(state);
+
+      if (dayData[habit.id]) {
+        item.classList.add('just-done');
+        setTimeout(() => item.classList.remove('just-done'), 600);
+
+        // Check if all habits done
+        if (getCompletedCount(currentDay) === habits.length) {
+          showCelebration('🌕');
+        }
+      }
+
+      renderAll();
+    });
+    list.appendChild(item);
+  });
+}
+
+// ─── Weekly Grid ──────────────────────────────────────────────────
+function renderWeeklyGrid() {
+  const grid = document.getElementById('weeklyGrid');
+  grid.innerHTML = '';
+  const currentWeek = getCurrentWeek();
+
+  ['New Moon', 'Crescent', 'Half Moon', 'Full Moon'].forEach((name, i) => {
+    const week = i + 1;
+    const pct = getWeeklyPct(week);
+    const card = document.createElement('div');
+    card.className = 'week-card' + (week === currentWeek ? ' active-week' : '');
+    card.innerHTML = `
+      <span class="week-phase">${phaseIcons[i]}</span>
+      <div class="week-name">${name}</div>
+      <div class="week-pct">${pct}%</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ─── Celebration ──────────────────────────────────────────────────
+function showCelebration(emoji) {
+  const el = document.createElement('div');
+  el.className = 'celebration';
+  el.textContent = emoji;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+// ─── Render All ───────────────────────────────────────────────────
+function renderAll() {
+  renderDate();
+  renderGlowLevel();
+  renderProgress();
+  renderDayGrid();
+  renderHabits();
+  renderWeeklyGrid();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────
+renderQuote();
+renderAll();
+</script>
+</body>
+</html>
